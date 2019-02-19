@@ -3,7 +3,10 @@ import Twilio
 import Files
 
 struct BasicZorkController {
-    fileprivate func incomingMessage(req: Request, sms: IncomingSMS) throws -> Future<Response> {
+    fileprivate func incomingMessage(req: Request) throws -> Future<Response> {
+        let sms = try req.content.syncDecode(IncomingSMS.self)
+        print(sms)
+        
         return try run(command: sms.body, phoneNumber: sms.from, on: req).map { output in
             let twilio  = try req.make(Twilio.self)
             
@@ -93,7 +96,7 @@ struct BasicZorkController {
         
         // Can't split on more than one character, so we're going to start by replacing the substring we want to split on with a character that will never show up in output
         let replaced = zorkOutputString.replacingOccurrences(of: "\n>", with: "‽")
-        let split = zorkOutputString.split(separator: "‽")
+        let split = replaced.split(separator: "‽")
         let enumerated = split.enumerated()
         let filtered = enumerated.filter { indices.contains($0.offset) }
         let stringified = filtered.map { String($0.element) }
@@ -107,6 +110,6 @@ struct BasicZorkController {
 
 extension BasicZorkController: RouteCollection {
     func boot(router: Router) throws {
-        router.post(IncomingSMS.self, at: "incoming", use: self.incomingMessage)
+        router.post("incoming", use: self.incomingMessage)
     }
 }
