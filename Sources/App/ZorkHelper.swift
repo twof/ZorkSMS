@@ -103,15 +103,13 @@ public struct ZorkHelper {
     class CreatePipes: ZorkCheck {
         func performAction(state: GameState) -> GameState {
             let outPipe = Pipe()
-            
-            var temp = state
-            
             state.task.standardOutput = outPipe
             state.task.standardError = outPipe
             
             let inPipe = Pipe()
             state.task.standardInput = inPipe
             
+            var temp = state
             temp.outPipe = outPipe
             temp.inPipe = inPipe
             return temp
